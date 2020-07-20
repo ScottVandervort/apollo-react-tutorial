@@ -23,3 +23,57 @@ and
 ```bash
 cd final/client && npm i && npm start
 ```
+
+## GraphQL Playground
+Once the server is running can use the web-based GraphQL Playground to browse the schema and run queries.
+[Graph QL Playground](http://localhost:4000/)
+
+## GraphQL Queries
+In a GraphQL query the query name ( ex: "GetLaunches" ) is arbitrary, it doesn't correspond to the queries declared in the Schema. "launches", however, DOES correspond to the query declared in the Schema. The stuff in the brackets defines what you want returned.
+'''
+query GetLaunches {
+  launches {
+    id
+    mission {
+      name
+    }
+  }
+}
+'''
+
+Variables can be parameterized, too....
+'''
+query GetLaunchById {
+  launch(id: 60) {
+    id
+    rocket {
+      id
+      type
+    }
+  }
+}
+
+query GetLaunchById($id: ID!) {
+  launch(id: $id) {
+    id
+    rocket {
+      id
+      type
+    }
+  }
+}
+'''
+... this would be how you specify a value for the variable.
+'''
+{
+  "id": 60
+}
+'''
+
+## Tutorials
+
+https://www.apollographql.com/docs/apollo-server/testing/mocking/
+
+https://www.apollographql.com/docs/tutorial/data-source/
+
+Here: https://www.apollographql.com/docs/tutorial/mutation-resolvers/
