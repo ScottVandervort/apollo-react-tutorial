@@ -1,19 +1,25 @@
 /*  
-    A Resolver transforms data from the Datasource(s) to the Schema on a field-by-field basis.
 
-    A Resolver describes how Types declared on the Schema are populated; usually this is done using a Datasource. Each property and method for a Schema Type
-    has a corresponding resolver.
+    Requests against the Schema are routed to Resolvers. Resolver retreive ( or modify ) data from the Datasource(s). A Resolver exists for each property/field of a type. 
+    
+    Only the properties/fields of the Query and Mutation types can be invoked directly from the GraphQL API. The other types and corresponding fields are used to define and resolve the response.
+    
+    A Resolver has four arguments : parent, args, context, and info; _ and __ are positional placeholder for unused arguments.     
 
-    A Resolver will make an attempt at resolving nested fields/objects, sometimes ( for enumerations for example ), you will need to explicitly define a [ nested ] Resolver.
+      "parent" is the object to which the field belongs.
 
-    A resolver has four arguments : parent, args, context, and info; _ and __ are positional placeholder for unused arguments. 
+      "args" are arguments sent in from the consumer's query 
+
+      "context" is a hodgepodge of stuff pertaining to the server containing at least the datasources/APIs
 */    
 
 const { paginateResults } = require('./utils');
 
 module.exports = {
     Query: {
-        /* An object is send in for the third argument, destructuring, or {} parses onlf the datasource field from the object */
+        /* An objects are sent in for the 2nd and thrid arguments. Destructuring, or {} parses onlf the datasource field from the object.
+           "pageSize" and "after" are sent in as arguments from query      
+        */
         launches: async (_, { pageSize = 20, after }, { dataSources }) => {
             const allLaunches = await dataSources.launchAPI.getAllLaunches();
             // we want these in reverse chronological order
@@ -39,8 +45,47 @@ module.exports = {
             dataSources.launchAPI.getLaunchById({ launchId: id }),
         me: (_, __, { dataSources }) => dataSources.userAPI.findOrCreateUser()
     },
+    Mutation: {
+      login: async (_, { email }, { dataSources }) => {
+        const user = await dataSources.userAPI.findOrCreateUser({ email });
+        if (user) return Buffer.from(email).toString('base64');
+      },
+      bookTrips: async (_, { launchIds }, { dataSources }) => {
+        const results = await dataSources.userAPI.bookTrips({ launchIds });
+        const launches = await dataSources.launchAPI.getLaunchesByIds({
+          launchIds,
+        });
+    
+        return {
+          success: results && results.length === launchIds.length,
+          message:
+            results.length === launchIds.length
+              ? 'trips booked successfully'
+              : `the following launches couldn't be booked: ${launchIds.filter(
+                  id => !results.includes(id),
+                )}`,
+          launches,
+        };
+      },
+      cancelTrip: async (_, { launchId }, { dataSources }) => {
+        const result = await dataSources.userAPI.cancelTrip({ launchId });
+    
+        if (!result)
+          return {
+            success: false,
+            message: 'failed to cancel trip',
+          };
+    
+        const launch = await dataSources.launchAPI.getLaunchById({ launchId });
+        return {
+          success: true,
+          message: 'trip cancelled',
+          launches: [launch],
+        };
+      }      
+    },    
     Mission: {
-        // The default size is 'LARGE' if not provided
+        // Size is an argument sent in from The default size is 'LARGE' if not provided
         missionPatch: (mission, { size } = { size: 'LARGE' }) => {
           return size === 'SMALL'
             ? mission.missionPatchSmall

@@ -70,6 +70,13 @@ query GetLaunchById($id: ID!) {
 }
 '''
 
+'''
+
+Can specify autorization and other headers in GraphiQL at bottom left of interface.
+
+
+Redux is unecessary with Apollo; APollo has it's own datastore ( i.e., "Store" ), state, and caching mechanisms.
+
 ## Tutorials
 
 https://www.apollographql.com/docs/apollo-server/testing/mocking/
@@ -77,3 +84,6 @@ https://www.apollographql.com/docs/apollo-server/testing/mocking/
 https://www.apollographql.com/docs/tutorial/data-source/
 
 Here: https://www.apollographql.com/docs/tutorial/mutation-resolvers/
+
+https://www.apollographql.com/docs/tutorial/queries/
+Tomorrow get debugger to work; I want to see what is beging returned in launches.jsx / updateQuery().

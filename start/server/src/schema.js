@@ -5,6 +5,8 @@ const { gql } = require('apollo-server');
 // This is JUST the schema, not the implementation.
 // Uses GraphQL's SDL, or (s)chema (d)efinition (l)anguage
 // Exclamation (!) means "never can be null"; if an array, the array can still be empty.
+//
+// These are all of the types recognized by GraphQL. The properties of the Query and Mutation types can be invoked from the API.
 const typeDefs = gql`
 
     type Query {
